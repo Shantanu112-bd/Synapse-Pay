@@ -31,18 +31,24 @@ export default function SynapsPayLanding() {
     <div className="min-h-screen bg-[#0a0a0c] text-white selection:bg-purple-500/30 overflow-hidden neural-bg">
       {/* NAVBAR */}
       <nav
-        className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-          isScrolled
-            ? "bg-[#0a0a0c]/80 backdrop-blur-md border-b border-white/10"
-            : "bg-transparent"
-        }`}
+        className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled
+          ? "bg-[#0a0a0c]/80 backdrop-blur-md border-b border-white/10"
+          : "bg-transparent"
+          }`}
       >
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-cyan-400 flex items-center justify-center">
-              <Zap className="w-5 h-5 text-white" />
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-cyan-400 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.4)]">
+                <Zap className="w-5 h-5 text-white" />
+              </div>
+              <span className="font-bold text-xl tracking-tight hidden sm:block">SynapsPay</span>
             </div>
-            <span className="font-bold text-xl tracking-tight">SynapsPay</span>
+            {/* Testnet Badge */}
+            <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-orange-500/10 border border-orange-500/20">
+              <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse" />
+              <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Testnet</span>
+            </div>
           </div>
 
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-300">
@@ -87,7 +93,8 @@ export default function SynapsPayLanding() {
             </button>
           </div>
         </div>
-      )}
+      )
+      }
 
       {/* HERO SECTION */}
       <section className="relative pt-40 pb-20 px-6 max-w-7xl mx-auto flex flex-col items-center text-center">
@@ -104,13 +111,13 @@ export default function SynapsPayLanding() {
             </span>
             Stellar Soroban Mainnet Live
           </div>
-          
+
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-8 leading-tight">
             The Financial <br className="hidden md:block" />
             <span className="text-gradient">Nervous System</span> <br className="hidden md:block" />
             for AI Agents
           </h1>
-          
+
           <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
             Give your AI agents their own wallet. Let them autonomously pay for APIs, compute, and services. Settled instantly on the Stellar blockchain.
           </p>
@@ -127,7 +134,7 @@ export default function SynapsPayLanding() {
         </motion.div>
 
         {/* LIVE DEMO TICKER / ANIMATION (Hero Bottom) */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.2 }}
@@ -141,9 +148,9 @@ export default function SynapsPayLanding() {
                 <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse" /> Running
               </span>
             </div>
-            
+
             <LiveDemoFeed />
-            
+
           </div>
         </motion.div>
       </section>
@@ -232,39 +239,39 @@ export default function SynapsPayLanding() {
 
       {/* FEATURES GRID */}
       <section className="py-32 px-6 max-w-7xl mx-auto">
-         <div className="text-center mb-20">
+        <div className="text-center mb-20">
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">Everything an Agent Needs to Transact</h2>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <FeatureCard 
+          <FeatureCard
             icon={<Wallet />}
-            title="Programmable Wallets" 
+            title="Programmable Wallets"
             desc="Every agent gets a dedicated Soroban contract tracking its balances and identity independently."
           />
-          <FeatureCard 
+          <FeatureCard
             icon={<Zap />}
-            title="Micropayments" 
+            title="Micropayments"
             desc="Send as little as $0.0001 instantly without being crushed by traditional credit card processor limits."
           />
-          <FeatureCard 
+          <FeatureCard
             icon={<Globe />}
-            title="Service Marketplace" 
+            title="Service Marketplace"
             desc="An on-chain registry of APIs, models, and data real-time searchable by operating autonomous agents."
           />
-          <FeatureCard 
+          <FeatureCard
             icon={<ShieldCheck />}
-            title="Escrow Protection" 
+            title="Escrow Protection"
             desc="Funds are locked on-chain and only released once the data payload or service execution is verified."
           />
-          <FeatureCard 
+          <FeatureCard
             icon={<Cpu />}
-            title="Budget Controls" 
+            title="Budget Controls"
             desc="Set hard daily limits, whitelist approved vendors, and trigger emergency circuit breakers."
           />
-          <FeatureCard 
+          <FeatureCard
             icon={<Percent />}
-            title="Revenue Sharing" 
+            title="Revenue Sharing"
             desc="Automatically split incoming payments across collaborating agent swarms instantly."
           />
         </div>
@@ -279,7 +286,7 @@ export default function SynapsPayLanding() {
             Integrate the SynapsPay SDK today and enable your AI models to autonomously buy, sell, and collaborate.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-             <button className="px-8 py-4 rounded-full bg-white text-black font-semibold hover:bg-gray-200 transition-all flex items-center justify-center gap-2">
+            <button className="px-8 py-4 rounded-full bg-white text-black font-semibold hover:bg-gray-200 transition-all flex items-center justify-center gap-2">
               Start Building Free
             </button>
             <button className="px-8 py-4 rounded-full bg-transparent text-white font-semibold border border-white/20 hover:bg-white/5 transition-colors">
@@ -293,12 +300,12 @@ export default function SynapsPayLanding() {
       <footer className="border-t border-white/10 bg-black pt-16 pb-8 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2">
-             <div className="w-6 h-6 rounded bg-gradient-to-br from-purple-600 to-cyan-400 flex items-center justify-center">
+            <div className="w-6 h-6 rounded bg-gradient-to-br from-purple-600 to-cyan-400 flex items-center justify-center">
               <Zap className="w-3 h-3 text-white" />
             </div>
             <span className="font-bold tracking-tight text-white">SynapsPay</span>
           </div>
-          
+
           <div className="flex gap-8 text-sm text-gray-400">
             <a href="#" className="hover:text-white transition-colors">Documentation</a>
             <a href="#" className="hover:text-white transition-colors">SDK Reference</a>
@@ -311,7 +318,7 @@ export default function SynapsPayLanding() {
           </div>
         </div>
       </footer>
-    </div>
+    </div >
   );
 }
 
@@ -352,10 +359,10 @@ function LiveDemoFeed() {
           className="flex items-center justify-between p-3 rounded-lg bg-black/40 border border-white/5"
         >
           <div className="flex items-center gap-3">
-             <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center">
-               <Cpu className="w-3 h-3 text-purple-400" />
-             </div>
-             <span className="text-gray-300">Paying {item.service}...</span>
+            <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center">
+              <Cpu className="w-3 h-3 text-purple-400" />
+            </div>
+            <span className="text-gray-300">Paying {item.service}...</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-white font-medium">${item.amount}</span>

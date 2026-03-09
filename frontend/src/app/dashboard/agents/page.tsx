@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { AgentCardSkeleton } from "@/components/Skeletons";
+import { useToast } from "@/components/ToastProvider";
 import {
     Bot,
     Plane,
@@ -70,36 +72,34 @@ const MOCK_TXS = [
 ];
 
 export default function AgentsPage() {
+    const { showToast } = useToast();
     const [agents, setAgents] = useState(INITIAL_AGENTS);
+    const [isLoading, setIsLoading] = useState(true);
     const [isDeployModalOpen, setIsDeployModalOpen] = useState(false);
     const [fundingAgent, setFundingAgent] = useState<typeof INITIAL_AGENTS[0] | null>(null);
     const [txHistoryAgent, setTxHistoryAgent] = useState<typeof INITIAL_AGENTS[0] | null>(null);
     const [deletingAgent, setDeletingAgent] = useState<typeof INITIAL_AGENTS[0] | null>(null);
-    const [toasts, setToasts] = useState<{ id: number; msg: string; type: "success" | "error" }[]>([]);
 
-    const addToast = (msg: string, type: "success" | "error" = "success") => {
-        const id = Date.now();
-        setToasts((t) => [...t, { id, msg, type }]);
-        setTimeout(() => {
-            setToasts((t) => t.filter((toast) => toast.id !== id));
-        }, 3000);
-    };
+    useEffect(() => {
+        const t = setTimeout(() => setIsLoading(false), 900);
+        return () => clearTimeout(t);
+    }, []);
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
-        addToast("Copied to clipboard!");
+        showToast("Copied to clipboard!", "info");
     };
 
     const handleDeploy = (e: React.FormEvent) => {
         e.preventDefault();
-        addToast("Agent deployed successfully on Soroban testnet!");
+        showToast("Agent created successfully!", "success", "Deployed on Stellar testnet");
         setIsDeployModalOpen(false);
     };
 
     const handleFund = (e: React.FormEvent) => {
         e.preventDefault();
         if (fundingAgent) {
-            addToast(`Successfully funded ${fundingAgent.name}!`);
+            showToast(`Agent funded successfully!`, "success", `${fundingAgent.name} wallet updated`);
         }
         setFundingAgent(null);
     };
@@ -107,7 +107,7 @@ export default function AgentsPage() {
     const handleDelete = () => {
         if (deletingAgent) {
             setAgents(agents.filter(a => a.id !== deletingAgent.id));
-            addToast(`${deletingAgent.name} deleted.`);
+            showToast(`${deletingAgent.name} deleted.`, "error");
         }
         setDeletingAgent(null);
     };
@@ -144,16 +144,19 @@ export default function AgentsPage() {
 
             {/* AGENTS GRID */}
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {agents.map(agent => (
-                    <AgentCard
-                        key={agent.id}
-                        agent={agent}
-                        onCopy={() => copyToClipboard(agent.address)}
-                        onFund={() => setFundingAgent(agent)}
-                        onTx={() => setTxHistoryAgent(agent)}
-                        onDelete={() => setDeletingAgent(agent)}
-                    />
-                ))}
+                {isLoading
+                    ? [...Array(3)].map((_, i) => <AgentCardSkeleton key={i} />)
+                    : agents.map(agent => (
+                        <AgentCard
+                            key={agent.id}
+                            agent={agent}
+                            onCopy={() => copyToClipboard(agent.address)}
+                            onFund={() => setFundingAgent(agent)}
+                            onTx={() => setTxHistoryAgent(agent)}
+                            onDelete={() => setDeletingAgent(agent)}
+                        />
+                    ))
+                }
             </div>
 
             {/* DEPLOY MODAL */}
@@ -319,23 +322,7 @@ export default function AgentsPage() {
                 )}
             </AnimatePresence>
 
-            {/* TOAST NOTIFICATIONS */}
-            <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
-                <AnimatePresence>
-                    {toasts.map(toast => (
-                        <motion.div
-                            key={toast.id}
-                            initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-                            className="bg-[#111113] border border-white/10 shadow-xl rounded-lg p-4 flex items-center gap-3 w-80"
-                        >
-                            <CheckCircle2 className="w-5 h-5 text-green-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]" />
-                            <p className="text-sm font-medium text-white">{toast.msg}</p>
-                        </motion.div>
-                    ))}
-                </AnimatePresence>
-            </div>
+
 
         </div>
     );

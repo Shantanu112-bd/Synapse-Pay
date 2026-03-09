@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ServiceCardSkeleton } from "@/components/Skeletons";
+import { useToast } from "@/components/ToastProvider";
 import {
     Search,
     Filter,
@@ -34,10 +36,16 @@ const MOCK_SERVICES = [
 ];
 
 export default function MarketplacePage() {
+    const { showToast } = useToast();
     const [search, setSearch] = useState("");
     const [category, setCategory] = useState("All");
     const [sort, setSort] = useState("Most Used");
-    const [toasts, setToasts] = useState<{ id: number; msg: string; type: "success" | "error" }[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const t = setTimeout(() => setIsLoading(false), 800);
+        return () => clearTimeout(t);
+    }, []);
 
     // Filtering Logic
     let filteredServices = [...MOCK_SERVICES];
@@ -62,17 +70,9 @@ export default function MarketplacePage() {
         filteredServices.sort((a, b) => b.id - a.id);
     }
 
-    const addToast = (msg: string) => {
-        const id = Date.now();
-        setToasts(t => [...t, { id, msg, type: "success" }]);
-        setTimeout(() => {
-            setToasts(t => t.filter(toast => toast.id !== id));
-        }, 3000);
-    };
-
     const handleRegisterService = (e: React.FormEvent) => {
         e.preventDefault();
-        addToast("Service successfully submitted to network registry!");
+        showToast("Service submitted to network registry!", "success", "Pending Soroban ledger confirmation");
         (e.target as HTMLFormElement).reset();
     };
 
@@ -142,10 +142,14 @@ export default function MarketplacePage() {
             <div>
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-lg font-bold">Featured Services</h2>
-                    <span className="text-sm text-gray-500">{filteredServices.length} Results</span>
+                    <span className="text-sm text-gray-500">{isLoading ? "…" : `${filteredServices.length} Results`}</span>
                 </div>
 
-                {filteredServices.length === 0 ? (
+                {isLoading ? (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {[...Array(6)].map((_, i) => <ServiceCardSkeleton key={i} />)}
+                    </div>
+                ) : filteredServices.length === 0 ? (
                     <div className="text-center py-20 bg-[#111113] border border-dashed border-white/10 rounded-3xl">
                         <Search className="w-10 h-10 text-gray-600 mx-auto mb-4" />
                         <p className="text-gray-400">No services found matching your criteria.</p>
@@ -213,7 +217,7 @@ export default function MarketplacePage() {
 
                                         <div className="relative z-10 mt-6">
                                             <button
-                                                onClick={() => addToast(`Added ${service.name} to agent dashboard.`)}
+                                                onClick={() => showToast(`${service.name} added to agent`, "success")}
                                                 className="w-full flex items-center justify-center gap-2 py-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl font-semibold transition-colors uppercase tracking-widest text-xs"
                                             >
                                                 <Plus className="w-4 h-4" /> Add to Agent
@@ -298,23 +302,6 @@ export default function MarketplacePage() {
                 </div>
             </section>
 
-            {/* TOASTS */}
-            <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
-                <AnimatePresence>
-                    {toasts.map(toast => (
-                        <motion.div
-                            key={toast.id}
-                            initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-                            className="bg-[#111113] border border-white/10 shadow-xl rounded-lg p-4 flex items-center gap-3 w-80"
-                        >
-                            <CheckCircle2 className="w-5 h-5 text-green-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]" />
-                            <p className="text-sm font-medium text-white">{toast.msg}</p>
-                        </motion.div>
-                    ))}
-                </AnimatePresence>
-            </div>
 
         </div>
     );
