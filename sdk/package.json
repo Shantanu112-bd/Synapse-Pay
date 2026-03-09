@@ -1,19 +1,24 @@
 {
-  "name": "@synapspay/sdk",
+  "name": "synapsepay-sdk",
   "version": "0.1.0",
-  "description": "JavaScript SDK for SynapsPay machine-to-machine payment layer",
-  "main": "index.js",
+  "description": "JavaScript SDK for SynapsPay AI Agent Payments",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "test": "jest"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "stellar",
     "soroban",
-    "synapspay",
     "ai",
     "payments"
   ],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^25.4.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
 }
