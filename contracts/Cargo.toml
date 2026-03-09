@@ -1,0 +1,10 @@
+[workspace]
+members = [
+    "agent-wallet",
+    "service-registry",
+    "escrow",
+    "reputation",
+    "budget-control",
+    "revenue-share"
+]
+resolver = "2"

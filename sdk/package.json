@@ -1,0 +1,19 @@
+{
+  "name": "@synapspay/sdk",
+  "version": "0.1.0",
+  "description": "JavaScript SDK for SynapsPay machine-to-machine payment layer",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "keywords": [
+    "stellar",
+    "soroban",
+    "synapspay",
+    "ai",
+    "payments"
+  ],
+  "author": "",
+  "license": "MIT"
+}
