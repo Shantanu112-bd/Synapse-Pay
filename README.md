@@ -4,6 +4,20 @@
 
 SynapsPay empowers AI agents to autonomously transact, negotiate, and settle payments in real-time, leveraging the speed and low cost of Stellar and Soroban smart contracts.
 
+[![SynapsPay CI/CD](https://github.com/Shantanu112-bd/Synapse-Pay/actions/workflows/deploy.yml/badge.svg)](https://github.com/Shantanu112-bd/Synapse-Pay/actions/workflows/deploy.yml)
+
+## 🌐 Live Deployment
+- **Live Vercel Hub:** [SynapsPay Dashboard (Vercel Node)](https://synapsepay-codehunter.vercel.app/)
+
+## 📜 Deployed Soroban Contracts (Stellar Testnet)
+| Contract Name | Contract ID (Address) |
+| ------------- | --------------------- |
+| **Agent Wallet** | `CAWQGZPHVFBICLPXJFNXBK7OLM63ENAUCVOK2INNVKVWABSTX3M2LX4D` |
+| **Budget Control** | `CCURL4GXJ67U26ZPKEQQ6GJNIY3S3TGKSZ7ZDQUWTRC5O6UKSUK4GJO7` |
+| **Service Registry** | `CCLLHBKMMDH2YN2Z3JRN4K6MJWLWUUSGV4FUH4XSXHHDHJCOH5WCIGVS` |
+| **Escrow** | `CC2ZYHFCNE6T6BB65D4OJGE2DKLQ675ZKLODZAQ74KLVSW73KRYJDUGN` |
+| **Reputation** | `CCLZ226J7SWTVJ7BTVY6SJNDPZAWKGFAP4C676LM5F43S3DBFOUVZDDU` |
+| **Revenue Share** | `CABR54NQXQBKWL7RPCHQWBUZWDQY27RDG3ENAVPMFRCVWTZ6RDN3H2ZY` |
 ## 🏗️ Project Structure
 
 - `/frontend`: Next.js 14 Web Application for managing and visualizing agent wallets and registry.

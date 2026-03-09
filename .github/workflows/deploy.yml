@@ -1,35 +1,54 @@
-name: CI/CD Pipeline
+name: SynapsPay CI/CD
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [main]
   pull_request:
-    branches: [ "main" ]
+    branches: [main]
 
 jobs:
-  build-and-test:
+  test-contracts:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - name: Run contract tests
+        run: |
+          cd contracts/agent-wallet && cargo test
+          cd ../budget-control && cargo test
+          cd ../service-registry && cargo test
+          cd ../escrow && cargo test
+          cd ../reputation && cargo test
+          cd ../revenue-share && cargo test
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
+  build-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - run: cd frontend && npm install
+      - run: cd frontend && npm run build
+      - run: cd frontend && npm run lint
 
-    - name: Install dependencies and build frontend
-      working-directory: ./frontend
-      run: |
-        npm install
-        npm run build
-
-    - name: Setup Rust
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-        target: wasm32-unknown-unknown
-        override: true
-
-    - name: Build Contracts
-      working-directory: ./contracts
-      run: cargo build --target wasm32-unknown-unknown --release
+  deploy:
+    needs: [test-contracts, build-frontend]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - run: npm install -g vercel
+      - run: cd frontend && vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      - run: cd frontend && vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - run: cd frontend && vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
