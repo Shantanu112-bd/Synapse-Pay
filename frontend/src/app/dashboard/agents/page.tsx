@@ -1,27 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AgentCardSkeleton } from "@/components/Skeletons";
 import { useToast } from "@/components/ToastProvider";
+import { AGENT_TEMPLATES, AgentTemplate } from "@/agents/templates";
+import { runAgent, AgentRunState } from "@/agents/runtime/agent-runner";
 import {
-    Bot,
-    Plane,
-    FileText,
-    Search,
-    Plus,
-    DollarSign,
-    List,
-    Edit,
-    Pause,
-    Play,
-    Trash2,
-    Copy,
-    CheckCircle2,
-    X,
-    Download,
-    Shield,
-    CreditCard
+    Bot, Plane, FileText, Search, Plus, DollarSign, List, Edit, Pause, Play,
+    Trash2, Copy, CheckCircle2, X, Download, Shield, CreditCard, ChevronRight, Loader2
 } from "lucide-react";
 
 // --- MOCK DATA ---
@@ -30,6 +19,7 @@ const INITIAL_AGENTS = [
         id: "ag_1",
         name: "Travel Assistant",
         type: "Travel",
+        templateId: "travel-master",
         address: "GBJ7...4X9Q",
         balance: 4.23,
         budget: 5.00,
@@ -42,6 +32,7 @@ const INITIAL_AGENTS = [
         id: "ag_2",
         name: "Research Bot",
         type: "Research",
+        templateId: "research-bot",
         address: "GAX2...9P2M",
         balance: 1.87,
         budget: 3.00,
@@ -54,6 +45,7 @@ const INITIAL_AGENTS = [
         id: "ag_3",
         name: "Content Writer",
         type: "Content",
+        templateId: "content-writer",
         address: "GCZ5...7Y1K",
         balance: 0.12,
         budget: 2.00,
@@ -76,9 +68,17 @@ export default function AgentsPage() {
     const [agents, setAgents] = useState(INITIAL_AGENTS);
     const [isLoading, setIsLoading] = useState(true);
     const [isDeployModalOpen, setIsDeployModalOpen] = useState(false);
+
+    // Action Modals State
     const [fundingAgent, setFundingAgent] = useState<typeof INITIAL_AGENTS[0] | null>(null);
     const [txHistoryAgent, setTxHistoryAgent] = useState<typeof INITIAL_AGENTS[0] | null>(null);
     const [deletingAgent, setDeletingAgent] = useState<typeof INITIAL_AGENTS[0] | null>(null);
+
+    // Runner State
+    const [runningAgent, setRunningAgent] = useState<typeof INITIAL_AGENTS[0] | null>(null);
+    const [agentRunState, setAgentRunState] = useState<AgentRunState | null>(null);
+    const [runInput, setRunInput] = useState<any>({});
+    const [isExecuting, setIsExecuting] = useState(false);
 
     useEffect(() => {
         const t = setTimeout(() => setIsLoading(false), 900);
@@ -86,7 +86,7 @@ export default function AgentsPage() {
     }, []);
 
     const copyToClipboard = (text: string) => {
-        navigator.clipboard.writeText(text);
+        navigator.clipboard.writeText(typeof text === "string" ? text : JSON.stringify(text, null, 2));
         showToast("Copied to clipboard!", "info");
     };
 
@@ -110,6 +110,44 @@ export default function AgentsPage() {
             showToast(`${deletingAgent.name} deleted.`, "error");
         }
         setDeletingAgent(null);
+    };
+
+    // Agent Runner Execution Logic
+    const startAgentRun = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!runningAgent) return;
+
+        setIsExecuting(true);
+        const template = AGENT_TEMPLATES.find(t => t.id === runningAgent.templateId);
+
+        if (!template) {
+            showToast("Agent template not found.", "error");
+            setIsExecuting(false);
+            return;
+        }
+
+        setAgentRunState({ progress: [], isComplete: false, result: null, totalCost: 0 });
+
+        await runAgent(template, runInput, (state: AgentRunState) => {
+            setAgentRunState(state);
+        });
+
+        setIsExecuting(false);
+    };
+
+    const renderRunFormInputs = (template: AgentTemplate) => {
+        return Object.keys(template.inputSchema).map(key => (
+            <div key={key} className="mb-4">
+                <label className="block text-xs font-medium text-gray-400 mb-1 capitalize">{key}</label>
+                <input
+                    required
+                    type={template.inputSchema[key] === "number" ? "number" : "text"}
+                    placeholder={`Enter ${key}...`}
+                    onChange={(e) => setRunInput({ ...runInput, [key]: e.target.value })}
+                    className="w-full bg-black border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500 transition-colors"
+                />
+            </div>
+        ));
     };
 
     return (
@@ -154,12 +192,17 @@ export default function AgentsPage() {
                             onFund={() => setFundingAgent(agent)}
                             onTx={() => setTxHistoryAgent(agent)}
                             onDelete={() => setDeletingAgent(agent)}
+                            onRun={() => {
+                                setRunningAgent(agent);
+                                setRunInput({});
+                                setAgentRunState(null);
+                            }}
                         />
                     ))
                 }
             </div>
 
-            {/* DEPLOY MODAL */}
+            {/* DEPLOY MODAL (Existing) */}
             <AnimatePresence>
                 {isDeployModalOpen && (
                     <Modal onClose={() => setIsDeployModalOpen(false)} title="Deploy New Agent">
@@ -167,15 +210,6 @@ export default function AgentsPage() {
                             <div>
                                 <label className="block text-xs font-medium text-gray-400 mb-1">Agent Name</label>
                                 <input required type="text" className="w-full bg-black border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500" placeholder="e.g. Travel Booking Bot" />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-medium text-gray-400 mb-1">Agent Type</label>
-                                <select className="w-full bg-black border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500">
-                                    <option>Travel</option>
-                                    <option>Research</option>
-                                    <option>Content</option>
-                                    <option>Custom</option>
-                                </select>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -187,27 +221,128 @@ export default function AgentsPage() {
                                     <input required type="number" step="0.01" className="w-full bg-black border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500" placeholder="20.00" />
                                 </div>
                             </div>
-                            <div>
-                                <label className="block text-xs font-medium text-gray-400 mb-1">Description</label>
-                                <textarea rows={2} className="w-full bg-black border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500" placeholder="What does this agent do..."></textarea>
-                            </div>
-                            <div>
-                                <label className="block text-xs font-medium text-gray-400 mb-2">Allowed Categories</label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {['Weather', 'Flights', 'Hotels', 'AI Models', 'Data', 'Search'].map((cat) => (
-                                        <label key={cat} className="flex items-center gap-2 text-sm text-gray-300">
-                                            <input type="checkbox" className="rounded border-white/10 bg-black text-purple-500 focus:ring-purple-500" />
-                                            {cat}
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
                             <div className="pt-4 border-t border-white/10">
                                 <button type="submit" className="w-full bg-white text-black font-semibold rounded-xl py-3 hover:bg-gray-200 transition-colors">
                                     Deploy Agent
                                 </button>
                             </div>
                         </form>
+                    </Modal>
+                )}
+            </AnimatePresence>
+
+            {/* RUN AGENT MODAL (New) */}
+            <AnimatePresence>
+                {runningAgent && (
+                    <Modal onClose={() => !isExecuting && setRunningAgent(null)} title={null} hideClose wide>
+                        <div className="p-2 md:p-6 grid lg:grid-cols-2 gap-8">
+
+                            {/* Input Form Column */}
+                            <div className="space-y-6">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border border-white/10 flex items-center justify-center">
+                                            <Play className="w-6 h-6 text-cyan-400" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-xl font-bold text-white leading-tight">Run {runningAgent.name}</h2>
+                                            <p className="text-xs text-cyan-400 uppercase tracking-widest">{runningAgent.type} Agent</p>
+                                        </div>
+                                    </div>
+                                    {!isExecuting && (
+                                        <button onClick={() => setRunningAgent(null)} className="p-2 bg-white/5 hover:bg-white/10 rounded-full">
+                                            <X className="w-5 h-5 text-gray-400" />
+                                        </button>
+                                    )}
+                                </div>
+
+                                {!agentRunState?.isComplete && (
+                                    <form onSubmit={startAgentRun} className={isExecuting ? 'opacity-50 pointer-events-none' : ''}>
+                                        <div className="bg-black/40 border border-white/10 p-5 rounded-2xl mb-6">
+                                            <h3 className="text-sm font-semibold mb-4 text-gray-300">Agent Inputs</h3>
+                                            {(() => {
+                                                const tpl = AGENT_TEMPLATES.find(t => t.id === runningAgent.templateId);
+                                                return tpl ? renderRunFormInputs(tpl) : <p className="text-xs text-red-400">Template Error.</p>;
+                                            })()}
+                                        </div>
+
+                                        <div className="flex justify-between items-center mb-6 px-2">
+                                            <span className="text-sm text-gray-400">Est. Cost</span>
+                                            <span className="text-cyan-400 font-mono font-bold">
+                                                {AGENT_TEMPLATES.find(t => t.id === runningAgent.templateId)?.estimatedCost || "0.00 USDC"}
+                                            </span>
+                                        </div>
+
+                                        <button
+                                            type="submit"
+                                            disabled={isExecuting}
+                                            className="w-full flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-purple-600 to-cyan-600 text-white rounded-xl font-bold text-lg hover:opacity-90 transition-opacity dropdown-shadow"
+                                        >
+                                            {isExecuting ? <><Loader2 className="w-5 h-5 animate-spin" /> Executing...</> : "Run Agent Wallet"}
+                                        </button>
+                                    </form>
+                                )}
+                            </div>
+
+                            {/* Execution Terminal & Results Column */}
+                            <div className="bg-black border border-white/10 rounded-2xl overflow-hidden flex flex-col h-[500px]">
+                                <div className="bg-[#0a0a0c] border-b border-white/5 px-4 py-3 flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-red-500/80" />
+                                    <div className="w-2 h-2 rounded-full bg-yellow-500/80" />
+                                    <div className="w-2 h-2 rounded-full bg-green-500/80" />
+                                    <span className="ml-2 text-xs font-mono text-gray-500">execution-logs</span>
+                                </div>
+                                <div className="flex-1 p-4 overflow-y-auto font-mono text-xs space-y-2">
+                                    {(!agentRunState || agentRunState.progress.length === 0) && (
+                                        <p className="text-gray-600">Waiting to run agent...</p>
+                                    )}
+                                    {agentRunState?.progress.map((p, i) => (
+                                        <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="flex items-start gap-3">
+                                            <span className="text-gray-500 shrink-0">[{p.step}]</span>
+                                            <div className="flex-1">
+                                                <span className={
+                                                    p.status === "pending" ? "text-gray-400" :
+                                                        p.status === "paying" ? "text-yellow-400" :
+                                                            p.status === "running" ? "text-blue-400" :
+                                                                p.status === "success" ? "text-green-400" : "text-red-400"
+                                                }>{p.message}</span>
+                                                {p.cost && (
+                                                    <span className="ml-2 text-cyan-400">- paid ${p.cost}</span>
+                                                )}
+                                                {(p.status === "paying" || p.status === "running") && (
+                                                    <Loader2 className="w-3 h-3 animate-spin inline ml-2 text-gray-500" />
+                                                )}
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                    {agentRunState?.isComplete && (
+                                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 pt-4 border-t border-white/10 border-dashed">
+                                            <p className="text-green-400 font-bold mb-2">✅ Agent Execution Complete!</p>
+                                            <p className="text-gray-400">Total Spent: <span className="text-cyan-400 font-bold">${agentRunState.totalCost.toFixed(4)} USDC</span></p>
+                                        </motion.div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Final Output Result View */}
+                            {agentRunState?.isComplete && agentRunState.result && (
+                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="col-span-1 lg:col-span-2 bg-[#111113] border border-cyan-500/30 rounded-2xl p-6 relative overflow-hidden">
+                                    <div className="absolute top-0 left-0 w-1 h-full bg-cyan-500" />
+                                    <div className="flex justify-between items-start mb-4">
+                                        <h3 className="font-bold text-lg text-white">Final Output</h3>
+                                        <div className="flex gap-2">
+                                            <button onClick={() => copyToClipboard(agentRunState.result)} className="p-2 border border-white/10 rounded border-gray-600 hover:bg-white/5 text-gray-300">
+                                                <Copy className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <pre className="text-sm font-mono text-gray-300 bg-black p-4 rounded-xl overflow-x-auto border border-white/5">
+                                        {JSON.stringify(agentRunState.result, null, 2)}
+                                    </pre>
+                                </motion.div>
+                            )}
+
+                        </div>
                     </Modal>
                 )}
             </AnimatePresence>
@@ -283,14 +418,6 @@ export default function AgentsPage() {
                                     </tbody>
                                 </table>
                             </div>
-
-                            <div className="flex justify-between items-center text-xs text-gray-500">
-                                <span>Showing 1 to 4 of 4 entries</span>
-                                <div className="flex gap-1">
-                                    <button className="px-2 py-1 bg-white/5 rounded hover:bg-white/10 disabled:opacity-30" disabled>Prev</button>
-                                    <button className="px-2 py-1 bg-white/5 rounded hover:bg-white/10 disabled:opacity-30" disabled>Next</button>
-                                </div>
-                            </div>
                         </div>
                     </Modal>
                 )}
@@ -322,8 +449,6 @@ export default function AgentsPage() {
                 )}
             </AnimatePresence>
 
-
-
         </div>
     );
 }
@@ -338,12 +463,12 @@ interface AgentCardProps {
     onFund: () => void;
     onTx: () => void;
     onDelete: () => void;
+    onRun: () => void;
 }
 
-function AgentCard({ agent, onCopy, onFund, onTx, onDelete }: AgentCardProps) {
+function AgentCard({ agent, onCopy, onFund, onTx, onDelete, onRun }: AgentCardProps) {
     const Icon = agent.type === 'Travel' ? Plane : agent.type === 'Research' ? Search : FileText;
 
-    // Progress bar logic
     const percent = Math.min((agent.balance / agent.budget) * 100, 100);
     let barColor = "bg-green-500";
     if (percent < 20) barColor = "bg-red-500";
@@ -354,7 +479,7 @@ function AgentCard({ agent, onCopy, onFund, onTx, onDelete }: AgentCardProps) {
             : "text-gray-400 bg-gray-400/10 border-gray-400/20";
 
     return (
-        <div className="bg-[#111113] border border-white/5 rounded-3xl p-6 hover:border-white/10 transition-colors group flex flex-col">
+        <div className="bg-[#111113] border border-white/5 rounded-3xl p-6 hover:border-white/10 transition-colors group flex flex-col h-full flex-grow">
             <div className="flex justify-between items-start mb-6">
                 <div className="flex gap-3">
                     <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white">
@@ -368,7 +493,6 @@ function AgentCard({ agent, onCopy, onFund, onTx, onDelete }: AgentCardProps) {
                     </div>
                 </div>
 
-                {/* Status indicator */}
                 <div className="group/tooltip relative">
                     <div className={`w-3 h-3 rounded-full ${agent.status === 'Active' ? 'bg-green-500' : 'bg-orange-500'}`} />
                     <div className="absolute top-5 right-0 bg-black text-xs px-2 py-1 rounded opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10 border border-white/10">
@@ -388,7 +512,6 @@ function AgentCard({ agent, onCopy, onFund, onTx, onDelete }: AgentCardProps) {
             </div>
 
             <div className="space-y-4 mb-6 flex-1">
-                {/* Wallet Balance */}
                 <div>
                     <div className="flex justify-between items-end mb-2">
                         <div>
@@ -401,39 +524,32 @@ function AgentCard({ agent, onCopy, onFund, onTx, onDelete }: AgentCardProps) {
                         <div className={`h-full rounded-full ${barColor}`} style={{ width: `${percent}%` }} />
                     </div>
                 </div>
-
-                {/* Daily Spending */}
-                <div className="pt-2 border-t border-white/5">
-                    <div className="flex justify-between text-xs mb-1">
-                        <span className="text-gray-500">Spent Today</span>
-                        <span className="font-mono text-gray-300">${agent.daily_spent.toFixed(2)}</span>
-                    </div>
-                </div>
             </div>
 
-            <div className="flex items-center justify-between border-t border-white/5 pt-4">
-                <div className="flex gap-2 text-xs">
-                    <span className="text-gray-500"><b className="text-white">{agent.txs_7d}</b> TXs (7d)</span>
-                </div>
+            <div className="flex flex-col gap-4 border-t border-white/5 pt-4">
+                <button
+                    onClick={onRun}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-purple-600/20 to-cyan-600/20 hover:from-purple-600/40 hover:to-cyan-600/40 text-cyan-400 border border-purple-500/20 transition-all font-semibold text-sm"
+                >
+                    <Play className="w-4 h-4" /> Run Agent Now
+                </button>
 
-                {/* Action Buttons */}
-                <div className="flex gap-2">
-                    <button onClick={onFund} className="w-8 h-8 rounded-full bg-purple-500/10 text-purple-400 flex items-center justify-center hover:bg-purple-500/20 transition-colors" title="Fund Wallet">
-                        <DollarSign className="w-4 h-4" />
-                    </button>
-                    <button onClick={onTx} className="w-8 h-8 rounded-full bg-gray-500/10 text-gray-400 flex items-center justify-center hover:bg-gray-500/20 transition-colors" title="View Transactions">
-                        <List className="w-4 h-4" />
-                    </button>
-                    <button className="w-8 h-8 rounded-full bg-gray-500/10 text-gray-400 flex items-center justify-center hover:bg-gray-500/20 transition-colors group/edit relative" title="Edit">
-                        <Edit className="w-4 h-4" />
-                        <div className="absolute bottom-10 bg-black border border-white/10 px-2 py-1 rounded text-xs opacity-0 group-hover/edit:opacity-100 transition-opacity pointer-events-none">Edit</div>
-                    </button>
-                    <button className="w-8 h-8 rounded-full bg-gray-500/10 text-gray-400 flex items-center justify-center hover:bg-gray-500/20 transition-colors" title="Pause">
-                        {agent.status === "Active" ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                    </button>
-                    <button onClick={onDelete} className="w-8 h-8 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500/20 transition-colors" title="Delete">
-                        <Trash2 className="w-4 h-4" />
-                    </button>
+                <div className="flex justify-between items-center">
+                    <div className="flex gap-2 text-xs">
+                        <span className="text-gray-500"><b className="text-white">{agent.txs_7d}</b> TXs (7d)</span>
+                    </div>
+
+                    <div className="flex gap-2">
+                        <button onClick={onFund} className="w-8 h-8 rounded-full bg-purple-500/10 text-purple-400 flex items-center justify-center hover:bg-purple-500/20 transition-colors" title="Fund Wallet">
+                            <DollarSign className="w-4 h-4" />
+                        </button>
+                        <button onClick={onTx} className="w-8 h-8 rounded-full bg-gray-500/10 text-gray-400 flex items-center justify-center hover:bg-gray-500/20 transition-colors" title="View Transactions">
+                            <List className="w-4 h-4" />
+                        </button>
+                        <button onClick={onDelete} className="w-8 h-8 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500/20 transition-colors" title="Delete">
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -462,7 +578,7 @@ function Modal({ children, onClose, title, hideClose, wide }: ModalProps) {
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className={`relative w-full ${wide ? "max-w-3xl" : "max-w-md"} bg-[#111113] border border-white/10 rounded-3xl shadow-2xl z-10 overflow-hidden flex flex-col max-h-[90vh]`}
+                className={`relative w-full ${wide ? "max-w-4xl" : "max-w-md"} bg-[#111113] border border-white/10 rounded-3xl shadow-2xl z-10 overflow-hidden flex flex-col max-h-[90vh]`}
             >
                 {title && (
                     <div className="flex items-center justify-between p-6 border-b border-white/10">
@@ -474,7 +590,7 @@ function Modal({ children, onClose, title, hideClose, wide }: ModalProps) {
                         )}
                     </div>
                 )}
-                <div className="p-6 overflow-y-auto custom-scrollbar">
+                <div className="overflow-y-auto custom-scrollbar">
                     {children}
                 </div>
             </motion.div>
