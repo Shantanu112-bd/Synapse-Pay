@@ -14,6 +14,7 @@ import {
   X,
   CheckCircle2,
 } from "lucide-react";
+import Link from "next/link";
 
 export default function SynapsPayLanding() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -67,9 +68,9 @@ export default function SynapsPayLanding() {
           </div>
 
           <div className="hidden md:flex">
-            <button className="bg-white text-black px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-gray-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+            <Link href="/dashboard" className="bg-white text-black px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-gray-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.1)]">
               Launch App
-            </button>
+            </Link>
           </div>
 
           <button
@@ -88,9 +89,9 @@ export default function SynapsPayLanding() {
             <a href="#features" onClick={() => setMobileMenuOpen(false)}>Features</a>
             <a href="#marketplace" onClick={() => setMobileMenuOpen(false)}>Marketplace</a>
             <a href="#docs" onClick={() => setMobileMenuOpen(false)}>Docs</a>
-            <button className="bg-white text-black px-6 py-3 rounded-full font-semibold w-full mt-4">
+            <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="bg-white text-black text-center px-6 py-3 rounded-full font-semibold w-full mt-4">
               Launch App
-            </button>
+            </Link>
           </div>
         </div>
       )
@@ -123,13 +124,13 @@ export default function SynapsPayLanding() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button className="w-full sm:w-auto px-8 py-4 rounded-full bg-white text-black font-semibold hover:bg-gray-200 transition-all flex items-center justify-center gap-2 group shadow-[0_0_30px_rgba(255,255,255,0.15)]">
+            <Link href="/dashboard" className="w-full sm:w-auto px-8 py-4 rounded-full bg-white text-black font-semibold hover:bg-gray-200 transition-all flex items-center justify-center gap-2 group shadow-[0_0_30px_rgba(255,255,255,0.15)]">
               Launch Dashboard
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </button>
-            <button className="w-full sm:w-auto px-8 py-4 rounded-full bg-white/5 text-white font-semibold border border-white/10 hover:bg-white/10 transition-colors">
-              View SDK
-            </button>
+            </Link>
+            <Link href="/sandbox" className="w-full sm:w-auto px-8 py-4 flex items-center justify-center rounded-full bg-white/5 text-white font-semibold border border-white/10 hover:bg-white/10 transition-colors">
+              Developer Sandbox
+            </Link>
           </div>
         </motion.div>
 
@@ -335,15 +336,15 @@ function LiveDemoFeed() {
       { service: "HotelsAI", amount: "0.0008" },
       { service: "MapsData", amount: "0.0001" },
     ];
-    let count = 2;
+    let index = 1;
 
     const interval = setInterval(() => {
-      const next = services[(count - 1) % services.length];
+      const next = services[index % services.length];
       setItems((prev) => {
-        const newItems = [{ id: count, ...next }, ...prev];
+        const newItems = [{ id: Date.now(), ...next }, ...prev];
         return newItems.slice(0, 3); // keep last 3
       });
-      count++;
+      index++;
     }, 2000);
 
     return () => clearInterval(interval);
