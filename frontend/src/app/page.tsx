@@ -56,15 +56,15 @@ export default function SynapsPayLanding() {
             <a href="#features" className="hover:text-white transition-colors">
               Features
             </a>
-            <a href="#marketplace" className="hover:text-white transition-colors">
+            <Link href="/dashboard/marketplace" className="hover:text-white transition-colors">
               Marketplace
-            </a>
-            <a href="#docs" className="hover:text-white transition-colors">
+            </Link>
+            <a href="https://github.com/Shantanu112-bd/Synapse-Pay/blob/main/README.md" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
               Docs
             </a>
-            <a href="#sdk" className="hover:text-white transition-colors">
+            <Link href="/sandbox" className="hover:text-white transition-colors">
               SDK
-            </a>
+            </Link>
           </div>
 
           <div className="hidden md:flex">
@@ -87,8 +87,8 @@ export default function SynapsPayLanding() {
         <div className="fixed inset-0 z-40 bg-[#0a0a0c]/95 backdrop-blur-xl pt-24 px-6 md:hidden">
           <div className="flex flex-col gap-6 text-lg">
             <a href="#features" onClick={() => setMobileMenuOpen(false)}>Features</a>
-            <a href="#marketplace" onClick={() => setMobileMenuOpen(false)}>Marketplace</a>
-            <a href="#docs" onClick={() => setMobileMenuOpen(false)}>Docs</a>
+            <Link href="/dashboard/marketplace" onClick={() => setMobileMenuOpen(false)}>Marketplace</Link>
+            <a href="https://github.com/Shantanu112-bd/Synapse-Pay/blob/main/README.md" target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)}>Docs</a>
             <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="bg-white text-black text-center px-6 py-3 rounded-full font-semibold w-full mt-4">
               Launch App
             </Link>
@@ -239,7 +239,7 @@ export default function SynapsPayLanding() {
       </section>
 
       {/* FEATURES GRID */}
-      <section className="py-32 px-6 max-w-7xl mx-auto">
+      <section id="features" className="py-32 px-6 max-w-7xl mx-auto">
         <div className="text-center mb-20">
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">Everything an Agent Needs to Transact</h2>
         </div>
@@ -287,12 +287,12 @@ export default function SynapsPayLanding() {
             Integrate the SynapsPay SDK today and enable your AI models to autonomously buy, sell, and collaborate.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <button className="px-8 py-4 rounded-full bg-white text-black font-semibold hover:bg-gray-200 transition-all flex items-center justify-center gap-2">
+            <Link href="/dashboard" className="px-8 py-4 rounded-full bg-white text-black font-semibold hover:bg-gray-200 transition-all flex items-center justify-center gap-2">
               Start Building Free
-            </button>
-            <button className="px-8 py-4 rounded-full bg-transparent text-white font-semibold border border-white/20 hover:bg-white/5 transition-colors">
+            </Link>
+            <a href="https://github.com/Shantanu112-bd/Synapse-Pay/blob/main/README.md" target="_blank" rel="noopener noreferrer" className="px-8 py-4 rounded-full bg-transparent text-white font-semibold border border-white/20 hover:bg-white/5 transition-colors text-center inline-block">
               Read Documentation
-            </button>
+            </a>
           </div>
         </div>
       </section>
@@ -391,17 +391,17 @@ function StepItem({ number, title, desc }: { number: string, title: string, desc
   )
 }
 
-function FeatureCard({ icon, title, desc }: { icon: React.ReactNode, title: string, desc: string }) {
+function FeatureCard({ icon, title, desc, href = "/dashboard" }: { icon: React.ReactNode, title: string, desc: string, href?: string }) {
   return (
-    <div className="group relative bg-[#0a0a0c] p-8 rounded-3xl border border-white/10 hover:border-white/20 transition-all overflow-hidden">
+    <Link href={href} className="group relative bg-[#0a0a0c] p-8 rounded-3xl border border-white/10 hover:border-white/20 transition-all overflow-hidden block">
       <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
       <div className="relative z-10">
         <div className="w-12 h-12 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center mb-6 text-cyan-400 group-hover:scale-110 transition-transform shadow-lg">
           {icon}
         </div>
-        <h3 className="text-xl font-bold text-white mb-3">{title}</h3>
+        <h3 className="text-xl font-bold text-white mb-3 group-hover:text-purple-400 transition-colors">{title}</h3>
         <p className="text-gray-400 text-sm leading-relaxed">{desc}</p>
       </div>
-    </div>
+    </Link>
   )
 }
