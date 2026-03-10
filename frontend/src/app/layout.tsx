@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/ToastProvider";
+import { WalletProvider } from "@/context/WalletContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,7 +20,9 @@ export default function RootLayout({
     <html lang="en" className="dark scroll-smooth">
       <body className={`${inter.className} antialiased selection:bg-purple-500/30`}>
         <ToastProvider>
-          {children}
+          <WalletProvider>
+            {children}
+          </WalletProvider>
         </ToastProvider>
       </body>
     </html>

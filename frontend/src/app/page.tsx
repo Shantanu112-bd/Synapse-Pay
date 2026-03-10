@@ -15,6 +15,23 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import Link from "next/link";
+import WalletConnect from "@/components/WalletConnect";
+import { useToast } from "@/components/ToastProvider";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+
+// Isolated so that useSearchParams doesn't block static rendering
+function WalletRequiredToast() {
+  const searchParams = useSearchParams();
+  const { showToast } = useToast();
+  useEffect(() => {
+    if (searchParams.get("error") === "wallet_required") {
+      setTimeout(() => showToast("Please connect your wallet to access the dashboard", "error"), 500);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return null;
+}
 
 export default function SynapsPayLanding() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -26,10 +43,12 @@ export default function SynapsPayLanding() {
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <div className="min-h-screen bg-[#0a0a0c] text-white selection:bg-purple-500/30 overflow-hidden neural-bg">
+      <Suspense fallback={null}><WalletRequiredToast /></Suspense>
       {/* NAVBAR */}
       <nav
         className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled
@@ -67,9 +86,10 @@ export default function SynapsPayLanding() {
             </Link>
           </div>
 
-          <div className="hidden md:flex">
-            <Link href="/dashboard" className="bg-white text-black px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-gray-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-              Launch App
+          <div className="hidden md:flex items-center gap-4">
+            <WalletConnect />
+            <Link href="/dashboard" className="bg-white/10 text-white px-5 py-2.5 rounded-xl border border-white/10 text-sm font-semibold hover:bg-white/20 transition-colors">
+              Dashboard
             </Link>
           </div>
 
